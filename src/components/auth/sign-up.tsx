@@ -1,6 +1,28 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { apiInstance } from "../../utils/api.config";
 
 export default function SignUp() {
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const navigate = useNavigate();
+
+  const handleRegister = async () => {
+    try {
+      await apiInstance.post("/auth/signup", {
+        fullName,
+        email,
+        password,
+      });
+      navigate("/login");
+    } catch (error) {
+      console.log("Lỗi đăng ký:", error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-base-200 flex items-center justify-center">
       <div className="card w-full max-w-md bg-base-100 shadow-xl">
@@ -12,7 +34,7 @@ export default function SignUp() {
             Vui lòng điền các thông tin bên dưới để bắt đầu
           </p>
 
-          <form>
+          <form onSubmit={handleRegister}>
             <div className="form-control w-full mb-4">
               <label className="label">
                 <span className="label-text">Tên hiển thị</span>
@@ -22,6 +44,8 @@ export default function SignUp() {
                 placeholder="John Doe"
                 className="input input-bordered w-full"
                 required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
               />
             </div>
 
@@ -34,6 +58,8 @@ export default function SignUp() {
                 placeholder="abc@email.com"
                 className="input input-bordered w-full"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
 
@@ -46,6 +72,8 @@ export default function SignUp() {
                 placeholder="123456"
                 className="input input-bordered w-full"
                 required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
             </div>
 
@@ -58,6 +86,8 @@ export default function SignUp() {
                 placeholder="123456"
                 className={`input input-bordered w-full`}
                 required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
               />
             </div>
 
@@ -68,7 +98,7 @@ export default function SignUp() {
                   className="checkbox checkbox-primary"
                   required
                 />
-                <span className="label-text">
+                <span className="label-text flex flex-wrap gap-2">
                   Tôi đồng ý với{" "}
                   <Link to="#" className="link link-primary">
                     Điều khoản dịch vụ

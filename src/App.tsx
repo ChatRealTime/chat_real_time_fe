@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
-import { publicRoutes } from "./components/routes/routes";
+import { privateRoutes, publicRoutes } from "./components/routes/routes";
+import ProtectRoutes from "./components/routes/protect-routes";
 
 function App() {
   return (
@@ -16,6 +17,14 @@ function App() {
             />
           );
         })}
+
+        {privateRoutes.map(({ layout, component, path }, index) => (
+          <Route
+            key={index}
+            path={path}
+            element={<ProtectRoutes component={component} layout={layout} />}
+          />
+        ))}
       </Routes>
     </>
   );
