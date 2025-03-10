@@ -1,23 +1,38 @@
+import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import {
+  LoginBody,
+  LoginBodyType,
+  LoginResponseType,
+} from "../../types/auth.types";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { apiInstance } from "../../utils/api.config";
+import { handleErrorApi } from "../../utils/utils";
+import toast from "react-hot-toast";
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const form = useForm<LoginBodyType>({
+    resolver: zodResolver(LoginBody),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const handleLogin = async () => {
+  const handleLogin = async (body: LoginBodyType) => {
     try {
-      await apiInstance.post("/auth/login", {
-        email,
-        password,
+      const res: LoginResponseType = await apiInstance.post("/auth/login", {
+        email: body.email,
+        password: body.password,
       });
-
+      toast.success(res.message);
       navigate("/profile");
     } catch (error) {
-      console.error("Lỗi đăng nhập:", error);
+      handleErrorApi({ error, setError: form.setError });
     }
   };
 
@@ -32,7 +47,11 @@ export default function Login() {
             Chào mừng bạn trờ lại với HA Chat
           </p>
 
-          <form onSubmit={handleLogin}>
+          <form
+            onSubmit={form.handleSubmit(handleLogin, (errors) => {
+              console.warn(errors);
+            })}
+          >
             <div className="form-control w-full mb-4">
               <label className="label" htmlFor="email">
                 <span className="label-text">Email</span>
@@ -40,29 +59,46 @@ export default function Login() {
               <input
                 id="email"
                 type="email"
+                {...form.register("email")} // this will register the input to react-hook-form
                 placeholder="abc@gmail.com"
                 className="input input-bordered w-full"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
               />
+              {form.formState.errors.email && (
+                <p className="text-red-500 text-sm mt-1">
+                  {form.formState.errors.email.message}
+                </p>
+              )}
             </div>
 
             <div className="form-control w-full mb-6">
               <label className="label" htmlFor="password">
                 <span className="label-text">Mật khẩu</span>
               </label>
-              <input
-                id="password"
-                type="password"
-                placeholder="123456"
-                className="input input-bordered w-full"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  {...form.register("password")}
+                  placeholder="123456"
+                  className="input input-bordered w-full"
+                  required
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 flex items-center px-2"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
+                </button>
+              </div>
+              {form.formState.errors.password && (
+                <p className="text-red-500 text-sm mt-1">
+                  {form.formState.errors.password.message}
+                </p>
+              )}
               <label className="label">
-                <a href="#" className="label-text-alt link link-hover">
+                <a href="#" className="label-text-alt link link-hover mt-1">
                   Quên mật khẩu?
                 </a>
               </label>

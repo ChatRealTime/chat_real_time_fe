@@ -57,7 +57,7 @@ export class EntityError extends HttpError {
 //define interceptor when response error
 
 apiInstance.interceptors.response.use(
-  (response) => response,
+  (response) => response.data, //just receive res.data when has response from api
   async (error) => {
     if (!error.response) {
       return Promise.reject(
@@ -69,12 +69,10 @@ apiInstance.interceptors.response.use(
     }
     if (error.response.status === ENTITY_ERROR_STATUS) {
       return Promise.reject(
-        new EntityError(
-          error.response.data as {
-            status: typeof ENTITY_ERROR_STATUS;
-            payload: EntityErrorPayload;
-          }
-        )
+        new EntityError({
+          status: ENTITY_ERROR_STATUS,
+          payload: error.response.data,
+        })
       );
     } else if (error.response.status === UNAUTHORIZED_ERROR_STATUS) {
       //  gọi api logout và chuyển đến trang login
