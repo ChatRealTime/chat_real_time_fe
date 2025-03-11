@@ -12,7 +12,7 @@ export const handleErrorApi = ({
   // check if error in EntityError (422)
   if (error instanceof EntityError && setError) {
     const { payload } = error;
-    console.log("payload", payload);
+    // console.log("payload", payload);
     if (payload.field && payload.message) {
       // Nếu API trả về lỗi theo field (ví dụ: { field: "email", message: "Email không hợp lệ" })
       setError?.(payload.field, { type: "manual", message: payload.message });

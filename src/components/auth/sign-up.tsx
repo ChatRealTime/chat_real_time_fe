@@ -1,25 +1,43 @@
-import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { apiInstance } from "../../utils/api.config";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  RegisterBody,
+  RegisterBodyType,
+  RegisterResponseType,
+} from "../../types/auth.types";
+import toast from "react-hot-toast";
+import { handleErrorApi } from "../../utils/utils";
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function SignUp() {
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
+  const form = useForm<RegisterBodyType>({
+    resolver: zodResolver(RegisterBody),
+    defaultValues: {
+      email: "",
+      fullname: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
 
-  const handleRegister = async () => {
+  const handleRegister = async (body: RegisterBodyType) => {
     try {
-      await apiInstance.post("/auth/signup", {
-        fullName,
-        email,
-        password,
+      const res: RegisterResponseType = await apiInstance.post("/auth/signup", {
+        email: body.email,
+        password: body.password,
+        fullname: body.fullname,
+        confirmPassword: body.confirmPassword,
       });
+      toast.success(res.message);
       navigate("/login");
     } catch (error) {
-      console.log("Lỗi đăng ký:", error);
+      handleErrorApi({ error, setError: form.setError });
     }
   };
 
@@ -34,61 +52,107 @@ export default function SignUp() {
             Vui lòng điền các thông tin bên dưới để bắt đầu
           </p>
 
-          <form onSubmit={handleRegister}>
+          <form
+            onSubmit={form.handleSubmit(handleRegister, (errors) => {
+              console.warn(errors);
+            })}
+          >
             <div className="form-control w-full mb-4">
-              <label className="label">
+              <label className="label" htmlFor="fullname">
                 <span className="label-text">Tên hiển thị</span>
               </label>
               <input
+                id="fullname"
+                {...form.register("fullname")}
                 type="text"
                 placeholder="John Doe"
                 className="input input-bordered w-full"
                 required
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
               />
             </div>
+            {form.formState.errors.fullname && (
+              <p className="text-red-500 text-sm mt-1">
+                {form.formState.errors.fullname.message}
+              </p>
+            )}
 
             <div className="form-control w-full mb-4">
-              <label className="label">
+              <label className="label" htmlFor="email">
                 <span className="label-text">Email</span>
               </label>
               <input
+                id="email"
+                {...form.register("email")}
                 type="email"
                 placeholder="abc@email.com"
                 className="input input-bordered w-full"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
+            {form.formState.errors.email && (
+              <p className="text-red-500 text-sm mt-1">
+                {form.formState.errors.email.message}
+              </p>
+            )}
 
             <div className="form-control w-full mb-4">
-              <label className="label">
+              <label className="label" htmlFor="password">
                 <span className="label-text">Mật khẩu</span>
               </label>
-              <input
-                type="password"
-                placeholder="123456"
-                className="input input-bordered w-full"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  {...form.register("password")}
+                  placeholder="123456"
+                  className="input input-bordered w-full"
+                  required
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 flex items-center px-2"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
+                </button>
+              </div>
+              {form.formState.errors.password && (
+                <p className="text-red-500 text-sm mt-1">
+                  {form.formState.errors.password.message}
+                </p>
+              )}
             </div>
 
             <div className="form-control w-full mb-6">
-              <label className="label">
+              <label className="label" htmlFor="confirmPassword">
                 <span className="label-text">Xác nhận mật khẩu</span>
               </label>
-              <input
-                type="password"
-                placeholder="123456"
-                className={`input input-bordered w-full`}
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
+              <div className="relative">
+                <input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  {...form.register("confirmPassword")}
+                  placeholder="123456"
+                  className="input input-bordered w-full"
+                  required
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 flex items-center px-2"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? (
+                    <Eye size={16} />
+                  ) : (
+                    <EyeOff size={16} />
+                  )}
+                </button>
+              </div>
+              {form.formState.errors.confirmPassword && (
+                <p className="text-red-500 text-sm mt-1">
+                  {form.formState.errors.confirmPassword.message}
+                </p>
+              )}
             </div>
 
             <div className="form-control">
@@ -112,7 +176,9 @@ export default function SignUp() {
             </div>
 
             <div className="form-control mt-6">
-              <button className="btn btn-primary w-full">Đăng ký</button>
+              <button className="btn btn-primary w-full" type="submit">
+                Đăng ký
+              </button>
             </div>
           </form>
 
