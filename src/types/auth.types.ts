@@ -49,3 +49,9 @@ export const RegisterResponse = z.object({
 });
 
 export type RegisterResponseType = z.infer<typeof RegisterResponse>;
+
+export const LogoutResponse = z.object({
+  message: z.string(),
+});
+
+export type LogoutResponseType = z.infer<typeof LogoutResponse>;

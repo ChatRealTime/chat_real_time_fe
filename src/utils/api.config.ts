@@ -79,7 +79,9 @@ apiInstance.interceptors.response.use(
       try {
         await apiInstance.post("/auth/logout");
       } finally {
-        window.location.href = "/login";
+        if (window.location.pathname !== "/login")
+          //Phải check để tránh lặp vô hạn khi checkAuth trong public route
+          window.location.href = "/login";
       }
       return Promise.reject(
         new HttpError({
